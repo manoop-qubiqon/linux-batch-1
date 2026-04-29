@@ -10,7 +10,7 @@ An **Operating System (OS)** is software that manages and handles the hardware a
 - Organizes system resources like different departments in a government  
 - Examples include Linux, Unix, Windows 11, MS-DOS, Android, macOS, and iOS  
 
-```text
+
         User
           ↓
      Application
@@ -22,7 +22,6 @@ An **Operating System (OS)** is software that manages and handles the hardware a
 
 History of Linux – From UNIX to Modern Cloud
 
-```text
 
 1969 → UNIX created
         ↓
