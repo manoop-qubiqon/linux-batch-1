@@ -10,7 +10,7 @@ An **Operating System (OS)** is software that manages and handles the hardware a
 - Organizes system resources like different departments in a government  
 - Examples include Linux, Unix, Windows 11, MS-DOS, Android, macOS, and iOS  
 
-
+```text
         User
           ↓
      Application
@@ -21,11 +21,6 @@ An **Operating System (OS)** is software that manages and handles the hardware a
 
 
 History of Linux – From UNIX to Modern Cloud
-
-<<<<<<< HEAD
-=======
-
->>>>>>> f06303e51ec987526d367eb4395abdad1cd3684c
 
 1969 → UNIX created
         ↓
@@ -38,11 +33,15 @@ History of Linux – From UNIX to Modern Cloud
 2000s → Linux Distributions became popular
         ↓
 Today → Linux powers Servers, Cloud, Android, DevOps
-
 Explanation
 Unix was created in 1969. Linux was inspired by Unix.
+
 The GNU Project started in 1983 to create free software tools.
+
 In 1991, Linus Torvalds created the Linux Kernel.
+
 In 1992, Linux became Open Source, so anyone can use and modify it.
+
 Then many versions came like Ubuntu, CentOS, and Red Hat Enterprise Linux.
+
 Today Linux is widely used in servers, cloud, and DevOps.
