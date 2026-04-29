@@ -22,6 +22,10 @@ An **Operating System (OS)** is software that manages and handles the hardware a
 
 History of Linux – From UNIX to Modern Cloud
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> f06303e51ec987526d367eb4395abdad1cd3684c
 
 1969 → UNIX created
         ↓
