@@ -2,7 +2,7 @@
 # ============================================================
 #  Nginx Load Balancer Demo — Docker Swarm
 #  Created by: akumenbyq
-#  Usage: bash run.sh [up|down|scale|test|logs|clean]
+#  Usage: bash run.sh [up|down|scale|test|ips|logs|clean]
 # ============================================================
 
 set -e
@@ -39,7 +39,8 @@ check_swarm() {
 
 build() {
   echo -e "${BOLD}📦 Building app image...${NC}"
-  docker build -t "${APP_IMAGE}" ./app
+  # All files are in the same flat directory
+  docker build -t "${APP_IMAGE}" .
   echo -e "${GREEN}✔  Image built: ${APP_IMAGE}${NC}"
 }
 
@@ -54,7 +55,7 @@ up() {
 
   echo ""
   echo -e "${BOLD}⏳ Waiting for replicas to start...${NC}"
-  sleep 8
+  sleep 10
 
   echo ""
   echo -e "${BOLD}📋 Stack services:${NC}"
@@ -89,48 +90,28 @@ test() {
   echo ""
 
   for i in $(seq 1 10); do
-    RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost 2>/dev/null || echo "ERROR")
-    HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-
-    # Extract the private IP from the response header
-    HANDLED_BY=$(curl -sI http://localhost 2>/dev/null | grep -i "X-Handled-By" | awk '{print $2}' | tr -d '\r' || echo "?")
-
-    echo -e "  Request ${CYAN}#${i}${NC} → Replica IP: ${GREEN}${HANDLED_BY}${NC}  HTTP: ${HTTP_CODE}"
-    sleep 0.5
+    HANDLED_BY=$(curl -sI http://localhost 2>/dev/null \
+      | grep -i "X-Handled-By" | awk '{print $2}' | tr -d '\r' || echo "?")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost 2>/dev/null || echo "ERR")
+    echo -e "  Request ${CYAN}#${i}${NC}  →  Replica IP: ${GREEN}${HANDLED_BY}${NC}   HTTP: ${HTTP_CODE}"
+    sleep 0.4
   done
 
   echo ""
-  echo -e "${GREEN}✅ Round-robin confirmed — each request hit a different replica!${NC}"
+  echo -e "${GREEN}✅ Round-robin confirmed — watch the IP change each request!${NC}"
 }
 
-test_verbose() {
-  banner
-  echo -e "${BOLD}🔁 Verbose test — full JSON from each replica:${NC}"
-  echo ""
-
-  for i in $(seq 1 5); do
-    echo -e "${CYAN}── Request #${i} ────────────────────────────────${NC}"
-    curl -s http://localhost | python3 -m json.tool 2>/dev/null \
-      || curl -s http://localhost | grep -o '"private_ip":"[^"]*"'
-    echo ""
-    sleep 0.3
-  done
-}
-
-show_ips() {
+ips() {
   echo ""
   echo -e "${BOLD}🌐 Replica container IPs:${NC}"
   echo ""
 
-  # List all app task container IDs and inspect them
-  docker ps --filter "name=${STACK_NAME}_app" \
-    --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | head -1
-
   docker ps --filter "name=${STACK_NAME}_app" \
     --format "{{.ID}}\t{{.Names}}" | while IFS=$'\t' read -r cid cname; do
       IP=$(docker inspect "${cid}" \
-        --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null || echo "N/A")
-      echo -e "  ${cid:0:12}  ${cname}  → ${GREEN}${IP}${NC}  [Created by: ${YELLOW}${CREATOR}${NC}]"
+        --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' 2>/dev/null \
+        | tr -s ' ' | sed 's/^ //' | sed 's/ $//')
+      echo -e "  ${CYAN}${cid:0:12}${NC}  ${cname}  →  ${GREEN}${IP}${NC}   [Created by: ${YELLOW}${CREATOR}${NC}]"
   done
   echo ""
 }
@@ -147,7 +128,8 @@ down() {
 }
 
 clean() {
-  down
+  down || true
+  sleep 5
   echo -e "${BOLD}🧹 Removing image...${NC}"
   docker rmi "${APP_IMAGE}" 2>/dev/null || true
   echo -e "${GREEN}✔  Cleaned up.${NC}"
@@ -172,13 +154,12 @@ help() {
 CMD="${1:-help}"
 
 case "$CMD" in
-  up)           up ;;
-  down)         down ;;
-  scale)        scale "$@" ;;
-  test)         test ;;
-  verbose)      test_verbose ;;
-  ips)          show_ips ;;
-  logs)         logs ;;
-  clean)        clean ;;
-  *)            help ;;
+  up)      up ;;
+  down)    down ;;
+  scale)   scale "$@" ;;
+  test)    test ;;
+  ips)     ips ;;
+  logs)    logs ;;
+  clean)   clean ;;
+  *)       help ;;
 esac
